@@ -6,8 +6,8 @@
     "visualClassName": "Visual",
     "version": "1.0.0.0",
     "description": "A single-metric KPI card — one value, told well. Trend, Target, and Headline presets with auto-contrast, an optional period delta, conditional formatting, and a configurable surface.",
-    "supportUrl": "https://github.com/posy-design/posy-kpi-card",
-    "gitHubUrl": "https://github.com/posy-design/posy-kpi-card"
+    "supportUrl": "https://github.com/posy-studio/posy-kpi-card",
+    "gitHubUrl": "https://github.com/posy-studio/posy-kpi-card"
   },
   "apiVersion": "5.11.0",
   "author": {

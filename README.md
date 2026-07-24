@@ -24,7 +24,7 @@ Number formatting follows your measure's format string (currency symbol, locale)
 ## Support
 
 - **Email:** emasiku@outlook.com
-- **Issues:** please open a [GitHub issue](https://github.com/posy-design/posy-kpi-card/issues) with your Power BI version and steps to reproduce.
+- **Issues:** please open a [GitHub issue](https://github.com/posy-studio/posy-kpi-card/issues) with your Power BI version and steps to reproduce.
 
 ## Privacy
 
