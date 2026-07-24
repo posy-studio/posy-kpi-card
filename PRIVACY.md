@@ -23,4 +23,4 @@ Your report data is governed by Microsoft Power BI and your organization's polic
 
 ## Contact
 
-Questions about this policy: **emasiku@outlook.com**
+Questions about this policy: **hello@platformapps.com**
