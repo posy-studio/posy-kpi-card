@@ -2,7 +2,7 @@
 
 _Last updated: July 24, 2026_
 
-**KPI Card by Posy** is a Power BI custom visual published by Posy.
+**KPI Card by Posy** is a Power BI custom visual published by Posy. Posy is a brand of **Platform Apps LLC**.
 
 ## What data the visual processes
 
