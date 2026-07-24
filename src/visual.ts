@@ -21,6 +21,7 @@ import VisualDialogPositionType = powerbi.VisualDialogPositionType;
 import ModalDialogResult = powerbi.extensibility.visual.ModalDialogResult;
 
 import { VisualFormattingSettingsModel } from "./settings";
+import { LicenseGate } from "./licensing";
 import { CfEditorDialog } from "./dialogs/CfEditorDialog";
 import { CFConfig, parseConfig, serializeConfig } from "./model/cfConfig";
 import { parseDataView, isLoading, KpiViewModel } from "./model/viewModel";
@@ -43,6 +44,7 @@ export class Visual implements IVisual {
   private prevShowCfEditor = false; // tracks the CF "Edit rules" toggle so we open the dialog only on the flip
   private cfDialogOpen = false;      // a CF dialog is currently up (don't re-open on intervening updates)
   private cfEditorInit = false;      // first update seen — a persisted showEditor:true on cold start is stale, not a flip
+  private license: LicenseGate;
 
   constructor(options: VisualConstructorOptions) {
     this.host = options.host;
@@ -51,11 +53,26 @@ export class Visual implements IVisual {
     this.tooltipServiceWrapper = createTooltipServiceWrapper(options.host.tooltipService, options.element);
     this.target = options.element;
     this.target.classList.add("posy-visual");
+    // Plans resolve async; until then we render normally (pending). If the resolution lands
+    // "unlicensed" after a render already happened, blank the card now — the host overlay
+    // (VisualIsBlocked) goes up via syncNotification and nothing should linger under it.
+    this.license = new LicenseGate(options.host.licenseManager, () => {
+      this.license.syncNotification();
+      if (!this.license.allowRender()) this.target.textContent = "";
+    });
   }
 
   public update(options: VisualUpdateOptions): void {
     this.events.renderingStarted(options);
     try {
+      // License gate (sold through Microsoft): a positively-unlicensed user gets a blank visual
+      // under the host's "license required" overlay. pending/lenient/licensed all render normally.
+      this.license.syncNotification();
+      if (!this.license.allowRender()) {
+        this.target.textContent = "";
+        this.events.renderingFinished(options);
+        return;
+      }
       setFormatLocale(this.host.locale); // viewer-locale number/date/currency grouping
       const dataView = options.dataViews && options.dataViews[0];
       this.settings = this.formattingSettingsService.populateFormattingSettingsModel(VisualFormattingSettingsModel, dataView);
