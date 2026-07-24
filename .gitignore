@@ -1,0 +1,7 @@
+node_modules/
+.tmp/
+dist/
+.vscode/
+.dev-harness/
+*.log
+webpack.statistics.*.html

@@ -1,0 +1,25 @@
+{
+  "visual": {
+    "name": "posyKpiCard",
+    "displayName": "KPI Card by Posy",
+    "guid": "posyKpiCard56510B2AA51B481D9AC80E9A4662B5DB",
+    "visualClassName": "Visual",
+    "version": "1.0.0.0",
+    "description": "A single-metric KPI card — one value, told well. Trend, Target, and Headline presets with auto-contrast, an optional period delta, conditional formatting, and a configurable surface.",
+    "supportUrl": "https://github.com/posy-design/posy-kpi-card",
+    "gitHubUrl": "https://github.com/posy-design/posy-kpi-card"
+  },
+  "apiVersion": "5.11.0",
+  "author": {
+    "name": "Posy",
+    "email": "emasiku@outlook.com"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": []
+}

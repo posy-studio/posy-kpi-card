@@ -1,0 +1,36 @@
+{
+  "name": "posy-kpi-card",
+  "description": "KPI Card by Posy — a single-metric KPI card with Trend, Target, and Headline layouts, auto-contrast, an optional period delta, and conditional formatting.",
+  "version": "1.0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/posy-design/posy-kpi-card"
+  },
+  "license": "MIT",
+  "scripts": {
+    "pbiviz": "pbiviz",
+    "start": "pbiviz start",
+    "package": "pbiviz package && node tools/inject-svg-icon.js",
+    "lint": "npx eslint .",
+    "eslint": "npx eslint ."
+  },
+  "devDependencies": {
+    "@types/d3": "7.4.3",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "d3": "7.9.0",
+    "eslint": "^9.11.1",
+    "eslint-plugin-powerbi-visuals": "^1.0.0",
+    "jszip": "^3.10.1",
+    "powerbi-visuals-api": "5.11.0",
+    "powerbi-visuals-tools": "7.1.0",
+    "powerbi-visuals-utils-formattingmodel": "6.0.4",
+    "powerbi-visuals-utils-formattingutils": "^6.1.2",
+    "powerbi-visuals-utils-tooltiputils": "^6.0.4",
+    "typescript": "5.5.4"
+  },
+  "comment:overrides": "uuid bumped to the patched line to clear GHSA-w5hq-g745-h8pq (moderate) pulled transitively via powerbi-visuals-tools > webpack-dev-server > sockjs; @hono/node-server bumped to clear GHSA-frvp-7c67-39w9 (moderate) pulled via powerbi-visuals-tools > @modelcontextprotocol/sdk. Both are dev-tooling-only, never shipped in the .pbiviz.",
+  "overrides": {
+    "uuid": "^11.1.1",
+    "@hono/node-server": "^2.0.5"
+  }
+}

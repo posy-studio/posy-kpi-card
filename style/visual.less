@@ -1,0 +1,255 @@
+/* Posy KPI Card — tokens + compact card, ported from kpi-styles.css.
+   Tokens are scoped to .kpi-card (self-contained); the dark ramp and the
+   JS-applied auto-contrast ink vars override per card. */
+
+/* ---------- bundled fonts (WOFF2, inlined into the package — no runtime fetch) ---------- */
+@font-face { font-family:'Space Grotesk'; font-style:normal; font-weight:600; font-display:swap; src:url('../assets/fonts/SpaceGrotesk-600.woff2') format('woff2'); }
+@font-face { font-family:'Space Grotesk'; font-style:normal; font-weight:700; font-display:swap; src:url('../assets/fonts/SpaceGrotesk-700.woff2') format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:400; font-display:swap; src:url('../assets/fonts/IBMPlexMono-400.woff2') format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-style:normal; font-weight:500; font-display:swap; src:url('../assets/fonts/IBMPlexMono-500.woff2') format('woff2'); }
+@font-face { font-family:'Hanken Grotesk'; font-style:normal; font-weight:400; font-display:swap; src:url('../assets/fonts/HankenGrotesk-400.woff2') format('woff2'); }
+@font-face { font-family:'Hanken Grotesk'; font-style:normal; font-weight:500; font-display:swap; src:url('../assets/fonts/HankenGrotesk-500.woff2') format('woff2'); }
+@font-face { font-family:'Hanken Grotesk'; font-style:normal; font-weight:600; font-display:swap; src:url('../assets/fonts/HankenGrotesk-600.woff2') format('woff2'); }
+
+/* ---------- host ---------- */
+.posy-visual { width: 100%; height: 100%; }
+.posy-root {
+  width: 100%; height: 100%;
+  box-sizing: border-box; padding: 6px;
+  display: flex;
+  font-family: 'Hanken Grotesk', "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* shared tokens (also redefined on .kpi-card) so the on-canvas gallery chrome can use them */
+  --accent: #5B57E0; --accent-tint: #EEEDFC; --focus-ring: #5B57E0;
+  --font: 'Hanken Grotesk', "Segoe UI", system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+.posy-root *, .posy-root *::before, .posy-root *::after { box-sizing: border-box; }
+
+/* ---------- on-canvas layout gallery (OKViz-style — fills the visual's whole canvas) ---------- */
+.posy-gallery-root { padding: 0; display: block; }
+.lay-gallery { width: 100%; height: 100%; display: flex; flex-direction: column; padding: 24px 30px 30px; overflow: auto; background: #fff; }
+.lay-gallery.on-dark { background: #17171C; --accent-tint: rgba(124,120,240,.20); --focus-ring: #8B87F5; }
+.lay-gallery-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 22px; padding: 0 2px; }
+.lay-gallery-title { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #46464E; }
+.lay-gallery.on-dark .lay-gallery-title { color: #E4E4EA; }
+.lay-gallery-hint { font-family: var(--font); font-size: 12.5px; color: #9a9aa2; }
+.lay-gallery.on-dark .lay-gallery-hint { color: #8a8a96; }
+/* Three responsive columns so all tiles always fit; each card is scaled to fill its column (gallery.ts). */
+.lay-gallery-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; align-content: start; }
+.lay-tile { display: flex; flex-direction: column; gap: 11px; min-width: 0; text-align: left; background: transparent; border: none; padding: 0; cursor: pointer; font: inherit; }
+/* Each tile preview is a static SVG that is itself a complete card (surface + 1px border + drop shadow
+   + a small margin), so the tile is just a transparent frame; the SVG scales to the tile via its viewBox. */
+.lay-tile-prev { position: relative; min-width: 0; pointer-events: none; }
+.lay-tile-prev > svg { display: block; width: 100%; height: auto; }
+/* The SVG has a ~24/440 (5.45%) transparent margin on every side (it holds the drop shadow). The
+   hover/selected ring uses WIDTH-relative offsets (margin %s resolve against width) so it hugs the real
+   card rect, not the larger SVG box — correct at any tile size and any card height. */
+.lay-tile-prev::after { content: ""; position: absolute; inset: 0; margin: 5.45%; border-radius: 20px; pointer-events: none; box-shadow: 0 0 0 0 transparent; transition: box-shadow .15s ease; }
+.lay-tile:hover .lay-tile-prev::after { box-shadow: 0 0 0 2px var(--accent-tint); }
+.lay-tile.on .lay-tile-prev::after { box-shadow: 0 0 0 2px var(--accent); }
+.lay-tile:focus-visible, .lay-tile:focus { outline: none; }
+.lay-tile:focus-visible .lay-tile-prev, .lay-tile:focus .lay-tile-prev { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.lay-tile-check { position: absolute; top: 0; right: 0; margin-top: calc(5.45% + 12px); margin-right: calc(5.45% + 12px); z-index: 2; }
+/* Inset the label by the SVG's 5.45% transparent margin so it aligns with the actual card's left edge,
+   and pull it up by the same amount to cancel the card's bottom shadow-margin — so it sits directly
+   under the card, not against the larger SVG box. (margin/padding %s resolve against width.) */
+.lay-tile-meta { display: flex; flex-direction: column; gap: 2px; padding: 0 5.45%; margin-top: -5.45%; }
+.lay-tile-name { font-family: var(--font); font-size: 12px; font-weight: 500; color: #2a2a30; }
+.lay-gallery.on-dark .lay-tile-name { color: #F4F4F7; }
+.lay-tile-desc { font-family: var(--font); font-size: 12px; line-height: 1.35; color: #8a8a92; }
+.lay-gallery.on-dark .lay-tile-desc { color: #9a9aa6; }
+
+/* v2 gallery — every card configuration grouped by family (Trend / Goal / Headline) */
+.lay-gallery.v2 { padding: 22px 30px 30px; }
+.lay-gallery.v2 .lay-gallery-head { margin-bottom: 18px; }
+/* Cap the content so the 3-up tiles top out near the card's true ~392px (the SVG's natural width)
+   instead of ballooning across the wide focus-mode canvas; columns stay responsive (1fr) below the cap
+   so all tiles always fit, left-aligned. */
+.lay-groups { display: flex; flex-direction: column; gap: 16px; max-width: 1320px; }
+.lay-group { display: flex; flex-direction: column; gap: 10px; }
+.lay-group-head { display: flex; align-items: baseline; gap: 11px; padding: 0 2px 8px; border-bottom: 1px solid #ECEAE8; }
+.lay-gallery.on-dark .lay-group-head { border-color: #2A2A33; }
+.lay-group-name { font-family: var(--font); font-size: 16px; font-weight: 700; letter-spacing: -.01em; color: var(--accent); }
+.lay-gallery.on-dark .lay-group-name { color: #8B87F5; }
+.lay-group-desc { font-family: var(--font); font-size: 12px; color: #9a9aa2; }
+.lay-gallery.on-dark .lay-group-desc { color: #8a8a96; }
+.lay-group-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
+.lay-gallery.v2 .lay-tile { gap: 8px; }
+
+/* ---------- card base + tokens ---------- */
+.kpi-card {
+  --bg: #F6F6F8;
+  --card: #FFFFFF;
+  --ink: #16161D;
+  --ink-2: #3A3A45;
+  --muted: #71717A;
+  --faint: #A1A1AA;
+  --line: rgba(20,20,30,0.08);
+  --line-soft: rgba(20,20,30,0.05);
+  --accent: #5B57E0;
+  --accent-tint: #EEEDFC;
+  --focus-ring: #5B57E0;
+  /* status TEXT colors meet WCAG AA (≥4.5:1) on the light surface; the brighter dark-surface variants
+     live in .kpi-card.dark + the JS ink ramp (LIGHT_INK_VARS) which overrides these inline per surface. */
+  --pos: #0E9F6E;  --pos-text: #0A8056;  --pos-tint: #E4F5EE;
+  --neg: #E0484C;  --neg-text: #D23A3E;  --neg-tint: #FBEBEB;
+  --warn: #E0A21E; --warn-text: #9A6A0F; --warn-tint: #FBF1DC;
+  /* the variance-background pill lays the status text over a same-hue tint, which erodes contrast — these
+     pill-only text colors clear AA (≥4.5:1) against the tint itself, not just the card surface. */
+  --pos-text-pill: #0A7649; --neg-text-pill: #C42E32;
+  --shadow: 0 1px 2px rgba(16,16,30,.04), 0 10px 30px -12px rgba(16,16,30,.14);
+  --shadow-lift: 0 1px 2px rgba(16,16,30,.05), 0 18px 44px -14px rgba(16,16,30,.22);
+  --num: 'Space Grotesk', "Segoe UI", system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font: 'Hanken Grotesk', "Segoe UI", system-ui, sans-serif;
+
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+  position: relative;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow .25s ease, border-color .25s ease;
+}
+.kpi-card.hero { flex: 1; align-self: stretch; min-width: 0; container-type: inline-size; }
+/* :focus fallback alongside :focus-visible — Power BI moves focus into the container programmatically
+   (Enter to enter the visual), where the :focus-visible heuristic may not fire. --focus-ring lifts to a
+   lighter accent on dark surfaces so the ring stays ≥3:1. */
+.kpi-card.hero:focus-visible, .kpi-card.hero:focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* ---------- head ---------- */
+.kpi-head { display: flex; align-items: center; gap: 9px; }
+.kpi-headtext { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.kpi-label {
+  font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ---------- more-options menu ---------- */
+/* decorative ⋯ mark — inert (no menu, no action); off by default, an opt-in affordance for a future action */
+.kpi-menu {
+  flex: 0 0 auto; align-self: flex-start; color: var(--faint);
+  padding: 4px 5px; display: flex; align-items: center; justify-content: center;
+}
+
+/* ---------- accessibility ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ---------- value + compare ---------- */
+.kpi-value {
+  font-family: var(--num); font-weight: 700; font-size: 46px; line-height: 1;
+  letter-spacing: -0.02em; color: var(--ink); font-variant-numeric: tabular-nums;
+  margin-top: 12px; /* Trend/Headline kicker gap (Goal overrides to 14) */
+}
+.kpi-compare-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.kpi-vs { font-family: var(--font); font-size: 13px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.cmpv { font-family: var(--num); font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; } /* prior-period Comparison Value */
+
+/* ---------- delta ---------- */
+.delta {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--num); font-weight: 600; font-variant-numeric: tabular-nums;
+  font-size: 14px; line-height: 1;
+}
+.delta.pos { color: var(--pos-text); }
+.delta.neg { color: var(--neg-text); }
+.delta.delta-bg { padding: 4px 9px; border-radius: 999px; }
+.delta.delta-bg.pos { background: var(--pos-tint); color: var(--pos-text-pill); }
+.delta.delta-bg.neg { background: var(--neg-tint); color: var(--neg-text-pill); }
+.delta.delta-blank { color: var(--muted); font-weight: 500; }   /* "show blank as" placeholder (no sentiment) */
+
+/* ---------- trend (fills remaining card height so it resizes vertically) ---------- */
+.kpi-trend { margin-top: 20px; flex: 1 1 auto; min-height: 0; }
+
+/* gallery preview cards size to their content (not fill), with a fixed-height trend */
+.posy-root.preview { height: auto; display: block; }
+.kpi-card.preview.hero { flex: none; align-self: auto; }
+.kpi-card.preview .kpi-trend { flex: 0 0 auto; height: 92px; min-height: 92px; }
+
+/* ---------- headline — callout size is author-set (no preset-specific font-size override) ---------- */
+
+/* ---------- goal preset ---------- */
+.kpi-card.goal .kpi-value { margin-top: 14px; }
+.kpi-card.goal .kpi-compare-row { margin-bottom: 20px; }
+.kpi-goal-sub { margin-top: 8px; font-size: 14px; color: var(--muted); font-weight: 500; }
+.kpi-bar { height: 7px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+.kpi-card.goal .kpi-bar.goal-bar { height: 10px; margin-top: 22px; }
+.kpi-bar-fill { height: 100%; border-radius: 999px; transition: width .9s cubic-bezier(.4,0,.2,1); }
+.kpi-card.goal .kpi-bullet-wrap { margin-top: 9px; }
+.kpi-bullet { position: relative; height: 8px; border-radius: 999px; background: var(--bg); }
+.kpi-bullet-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; transition: width .9s cubic-bezier(.4,0,.2,1); }
+.kpi-bullet-mark { position: absolute; top: -3px; bottom: -3px; width: 2.5px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); }
+.kpi-goal-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.kpi-goal-foot span:first-child { font-weight: 500; color: var(--ink-2); }
+.tgt-status { font-family: var(--num); font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tgt-status.pos { color: var(--pos-text); }
+.tgt-status.neg { color: var(--neg-text); }
+
+/* ---------- responsive reflow (container queries on the card's own width) ----------
+   As the tile narrows, shed in order: the comparison phrase → then the chart.
+   The callout value is a fixed author-set size — it no longer auto-scales. */
+@container (max-width: 230px) {
+  .kpi-vs { display: none; }                /* 1. drop the "vs last month" phrase (keep the delta) */
+}
+@container (max-width: 180px) {
+  .kpi-trend { display: none; }             /* 2. drop the sparkline */
+}
+
+/* ---------- empty / no-data ---------- */
+.kpi-card.empty-card { display: flex; flex-direction: column; position: relative; }
+.kpi-empty-brand { display: flex; align-items: center; gap: 8px; position: absolute; top: 24px; left: 24px; }
+.kpi-empty-mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-tint); display: flex; align-items: center; justify-content: center; flex: none; }
+.kpi-empty { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 5px; padding: 56px 0 48px; }
+.kpi-empty-name { font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: 3px; } /* de-emphasized branding eyebrow */
+.kpi-empty-t { font-family: var(--font); font-size: 16px; font-weight: 600; color: var(--muted); letter-spacing: -0.01em; }
+.kpi-empty-s { font-family: var(--font); font-size: 12.5px; color: var(--muted); font-weight: 500; } /* --muted (4.83:1 AA) — kept over the handoff's --faint (2.56:1) to preserve the a11y fix */
+
+/* ---------- loading skeleton (shimmer; static under reduced-motion) ---------- */
+.skel {
+  background: linear-gradient(90deg, rgba(20,20,30,.06) 25%, rgba(20,20,30,.11) 37%, rgba(20,20,30,.06) 63%);
+  background-size: 400% 100%; animation: posy-skel 1.4s ease infinite;
+}
+.kpi-card.dark .skel {
+  background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.13) 37%, rgba(255,255,255,.06) 63%);
+  background-size: 400% 100%;
+}
+@keyframes posy-skel { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; }
+  /* suppress the goal bar/bullet width sweep and the card hover transition for motion-sensitive users */
+  .kpi-bar-fill, .kpi-bullet-fill, .kpi-card { transition: none; }
+}
+
+/* ---------- dark theme ---------- */
+.kpi-card.dark {
+  --card: #191920; --ink: #F4F4F7; --ink-2: #D4D4DA; --muted: #9AA0AC; --faint: #7C808C;
+  --line: rgba(255,255,255,.10); --line-soft: rgba(255,255,255,.06);
+  --bg: #23232B; --accent-tint: rgba(124,120,240,.20); --focus-ring: #8B87F5;
+  /* brighter status TEXT for ≥4.5:1 on the dark surface (the light-surface variants are in the base block) */
+  --pos-text: #0E9F6E; --neg-text: #F0686C; --warn-text: #E0A21E;
+  --pos-text-pill: #1CB182; --neg-text-pill: #F0686C; /* pill text vs the dark same-hue tint (≥4.5:1) */
+  --pos-tint: rgba(14,159,110,.18); --neg-tint: rgba(224,72,76,.18);
+  border-color: rgba(255,255,255,.09);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 18px 40px -16px rgba(0,0,0,.6);
+}
+.kpi-card.dark.hero:hover { box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 24px 50px -16px rgba(0,0,0,.7); }
+
+/* ---------- Windows high-contrast (forced-colors) ---------- */
+@media (forced-colors: active) {
+  .kpi-card.hero { border: 1px solid CanvasText; }
+  /* the delta keeps its sentiment (the ▲/▼ glyph carries the meaning regardless of colour) */
+  .delta, .kpi-bar, .kpi-bar-fill, .kpi-bullet, .kpi-bullet-fill, .kpi-bullet-mark { forced-color-adjust: none; }
+  .kpi-bar, .kpi-bullet { background: Canvas; border: 1px solid CanvasText; }
+  .kpi-bar-fill, .kpi-bullet-fill { background: Highlight; }
+  .kpi-bullet-mark { background: CanvasText; }
+  /* sparkline / bars — force to system colours (SVG attrs don't auto-adjust) */
+  .kpi-trend svg path { stroke: CanvasText; }
+  .kpi-trend svg path[fill^="url"] { fill: Canvas; }
+  .kpi-trend svg circle { stroke: CanvasText; fill: Canvas; }
+  .kpi-trend svg rect { fill: Highlight; }
+}
