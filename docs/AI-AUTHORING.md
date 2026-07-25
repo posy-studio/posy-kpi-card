@@ -246,6 +246,16 @@ overwrites it**. Verified from Desktop's own serialization, the correct patterns
 Extracted from the sample report saved in PBIR format (visualContainer schema **2.11.0**); every
 pattern below is Desktop's own serialization of this visual.
 
+> **Round-trip verified (2026-07-25):** a six-card torture page exercising the full property surface
+> (every object, every widget type, both CF threshold modes, `between` + magnitude suffixes + the `≥`
+> operator, label-tracker pairs, custom fonts) was generated externally per this document, opened in
+> Power BI Desktop with **zero blocking errors and all formatting rendering correctly**, then re-saved.
+> Desktop's re-serialization changed **no encodings** — the only diffs were the visual persisting
+> auto-derived label + tracker pairs where they'd been omitted (the §6 self-derive behavior). Expect
+> those additions on re-save; they're harmless. Custom labels written with their trackers were
+> preserved untouched. Test harness: `AppSource Submission/encoding-test/generate-torture-page.py`
+> (+ `baseline-generated/` for diffing).
+
 ### Literal encoding rules
 
 | Kind | Encoding | Example |
