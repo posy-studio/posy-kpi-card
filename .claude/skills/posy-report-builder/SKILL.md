@@ -5,10 +5,15 @@ description: Build or extend a Power BI report (PBIP/PBIR format) using KPI Card
 
 # Posy Report Builder
 
-Author Power BI reports with **KPI Card by Posy** by writing PBIR files directly. The complete
-visual contract — data roles, property vocabulary, CF grammar, verified JSON encodings — is in
-[docs/AI-AUTHORING.md](../../../docs/AI-AUTHORING.md). Read it before generating anything; this
-skill is the workflow, that document is the vocabulary.
+Author Power BI reports with **KPI Card by Posy** by writing PBIR files directly. Two documents are
+required reading before generating anything:
+
+- [docs/AI-AUTHORING.md](../../../docs/AI-AUTHORING.md) — the **schema**: data roles, property
+  vocabulary, CF grammar, round-trip-verified JSON encodings.
+- [docs/AI-DESIGN-GUIDE.md](../../../docs/AI-DESIGN-GUIDE.md) — the **taste**: layout-aware card
+  sizing, the grid system, curated looks, and restraint rules. Posy's promise is design-led
+  visuals; output must look like Posy marketing material, not a settings dump. The defaults ARE
+  the design — deviate deliberately and minimally.
 
 ## Prerequisites
 
@@ -48,20 +53,22 @@ For each card, create `definition\pages\<pageId>\visuals\<visualId>\visual.json`
 template in AI-AUTHORING.md §7:
 - `name`/folder: a fresh 20-char lowercase hex id (must be unique in the report).
 - Bind roles per §1 of the reference; sort by the trend column ascending (`isDefaultSort: true`).
-- Only set properties that differ from defaults. **Never** set the reserved properties (§4), and
-  follow the label-tracker pairing rule when customizing labels.
+- **Size per layout** from the design guide §1 — Trend 408×315, Target 408×266, Headline 416×189
+  (never the same height across layouts) — and lay out with the §2 grid math.
+- **Style from a curated look** (design guide §3): Posy Light / Posy Dark / Brand accent / Status.
+  Free-form property mixing only on an explicit user request, within the §4 restraint rules.
+- Only set properties that differ from defaults. **Never** set the reserved properties (§4 of the
+  reference), and follow the label-tracker pairing rule when customizing labels.
 - Always include the container hygiene block (`title`/`background`/`border` off).
-- Styling: prefer `theme`/`surface` + auto-contrast over explicit font colors; keep the 3-family
-  type system (don't override fonts without a reason).
 
 ### 4. Assemble pages
-- Add each visual's page folder + `page.json` (name, displayName, width/height — default canvas
+- Add each visual's page folder + `page.json` (name, displayName, width/height — canvas 1280×800 or
   1280×720), and register page order in `pages.json`.
-- KPI strip math: cards read best near the reference proportions (~408×315 or wider ~392×260).
-  For an N-card strip on a 1280 canvas: margin 40, gutter 24, width = (1280 − 80 − 24(N−1))/N.
-  Align tops; equal heights; `tabOrder` left-to-right (×1000 steps, matching Desktop convention).
+- Grid per design guide §2: margin 40, gutter 24; a strip is ONE layout family with identical
+  sizes and aligned tops; mixed layouts go in separate rows; `tabOrder` left-to-right (×1000
+  steps, matching Desktop convention). Leave whitespace — don't fill every pixel.
 
-### 5. Validate — three gates, in order
+### 5. Validate — four gates, in order
 1. **Schema:** every generated file validates against the `$schema` URL in its header (Microsoft
    publishes all PBIR schemas; offline check if the schemas are cached in the workspace).
 2. **Lint (Posy rules):** no reserved properties; trackers paired; enum values from the vocabulary
@@ -71,6 +78,9 @@ template in AI-AUTHORING.md §7:
    in-place, reopen); then review rendered pages (screenshot) against intent: right measure, right
    layout, delta direction/sentiment, readable contrast, no clipped callout (lower `fontSize` on
    small tiles — the value never auto-shrinks).
+4. **Design QA:** run the design guide §5 checklist against the screenshot — per-layout heights,
+   grid alignment, value readability ("0.01M" = failure), palette discipline, one-accent rule.
+   Fix the PBIR and re-review until it would pass as a Posy marketing screenshot.
 
 ## Hard rules
 
