@@ -169,11 +169,21 @@ element's dropdown, but renders only where installed — only the 3 embedded Pos
 
 | Property | Why |
 |---|---|
-| `callout.labelTextField`, `delta.comparisonLabelField`, `delta.comparisonValueField` | Hidden sync trackers the visual maintains to auto-derive labels on field changes. Writing them desynchronizes label auto-reset. |
 | `conditionalFormatting.showEditor` | Dialog trigger — persisting `true` would pop the editor on load. |
 | `cardStyle.showLayoutGallery` | Opens the interactive gallery + focus mode. |
 | `advanced.customFontsNote` | Read-only pane text. |
 | the whole `subTotals` object | Must stay unset so the matrix row grand total defaults ON — the headline's correctness depends on it. |
+
+**Label sync trackers — write in pairs or not at all.** `callout.labelTextField`,
+`delta.comparisonLabelField`, and `delta.comparisonValueField` are the visual's sync trackers: on load
+it compares each tracker to the currently bound field name and, on mismatch, **re-derives the label and
+overwrites it**. Verified from Desktop's own serialization, the correct patterns are:
+
+- *Auto labels (recommended):* omit `labelText`/`comparisonLabel` **and** all three trackers — the
+  visual derives "vs &lt;field&gt;" / the value field name itself.
+- *Custom label:* set the label **and** its tracker together, tracker = the bound field's display name
+  (e.g. `comparisonLabel: 'vs last year'` + `comparisonLabelField: 'Revenue PY'` +
+  `comparisonValueField: 'Revenue'`). A custom label without its tracker gets clobbered on first load.
 
 ---
 
@@ -231,16 +241,115 @@ element's dropdown, but renders only where installed — only the 3 embedded Pos
 
 ---
 
-## 7. PBIR `visual.json` examples
+## 7. PBIR `visual.json` — verified encoding + canonical example
 
-> **Status: pending ground-truth corpus.** Canonical examples for all six configurations (Trend
-> area/line/bars, Target progress/fixed, Headline) will be extracted from the sample report saved in
-> PBIR format and inserted here verbatim. Until then: bind the five roles per §1 with the matrix
-> projections in role order (`value`, `comparison`, `target`, `tooltips` on Values; `trend` on Rows),
-> and encode `objects` properties as PBIR literal expressions per Microsoft's published
-> `visualContainer` schema (enum values as quoted string literals — e.g. `stylePreset` → `'goal'`).
-> Validate every generated file against the schema URL in its `$schema` header before opening in
-> Desktop.
+Extracted from the sample report saved in PBIR format (visualContainer schema **2.11.0**); every
+pattern below is Desktop's own serialization of this visual.
+
+### Literal encoding rules
+
+| Kind | Encoding | Example |
+|---|---|---|
+| enum / text | single-quoted string inside `Value` | `{"expr": {"Literal": {"Value": "'goal'"}}}` |
+| number | `D` suffix | `{"expr": {"Literal": {"Value": "2D"}}}` |
+| boolean | bare | `{"expr": {"Literal": {"Value": "true"}}}` |
+| fill color | `solid.color` wrapper (note: **not** under a top-level `expr`) | `{"solid": {"color": {"expr": {"Literal": {"Value": "'#1C71A3'"}}}}}` |
+| CF `config` | JSON serialized into a single-quoted string literal | see below |
+
+Objects are arrays-of-one: `objects.<objectName>[0].properties.<prop>`.
+
+### Canonical Trend card (bindings + common properties)
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "<20-char-unique-id>",
+  "position": { "x": 112.7, "y": 169, "z": 0, "height": 315, "width": 408, "tabOrder": 0 },
+  "visual": {
+    "visualType": "posyKpiCard56510B2AA51B481D9AC80E9A4662B5DB",
+    "query": {
+      "queryState": {
+        "value": {
+          "projections": [{
+            "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Metrics" } }, "Property": "Revenue" } },
+            "queryRef": "_Metrics.Revenue", "nativeQueryRef": "Revenue"
+          }]
+        },
+        "trend": {
+          "projections": [{
+            "field": { "Column": { "Expression": { "SourceRef": { "Entity": "Dim_Date" } }, "Property": "MonthYear" } },
+            "queryRef": "Dim_Date.MonthYear", "nativeQueryRef": "MonthYear"
+          }]
+        },
+        "comparison": {
+          "projections": [{
+            "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Metrics" } }, "Property": "Revenue PY" } },
+            "queryRef": "_Metrics.Revenue PY", "nativeQueryRef": "Revenue PY"
+          }]
+        },
+        "target": {
+          "projections": [{
+            "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "_Metrics" } }, "Property": "Revenue Target" } },
+            "queryRef": "_Metrics.Revenue Target", "nativeQueryRef": "Revenue Target"
+          }]
+        }
+      },
+      "sortDefinition": {
+        "sort": [{
+          "field": { "Column": { "Expression": { "SourceRef": { "Entity": "Dim_Date" } }, "Property": "MonthYear" } },
+          "direction": "Ascending"
+        }],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "callout": [{ "properties": {
+        "displayUnits": { "expr": { "Literal": { "Value": "'millions'" } } },
+        "decimalPlaces": { "expr": { "Literal": { "Value": "2D" } } }
+      } }],
+      "delta": [{ "properties": {
+        "comparisonLabel": { "expr": { "Literal": { "Value": "'vs last year'" } } },
+        "comparisonLabelField": { "expr": { "Literal": { "Value": "'Revenue PY'" } } },
+        "comparisonValueField": { "expr": { "Literal": { "Value": "'Revenue'" } } }
+      } }]
+    },
+    "visualContainerObjects": {
+      "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } }],
+      "background": [{ "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } }],
+      "border": [{ "properties": { "show": { "expr": { "Literal": { "Value": "false" } } } } }]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
+```
+
+Notes:
+- **Container hygiene:** always turn off the container `title`, `background`, and `border` in
+  `visualContainerObjects` — the card draws its own chrome (this matches the visual's own guidance).
+- The trend column drives the sort (`Ascending`, `isDefaultSort: true`) so the sparkline reads
+  left-to-right chronologically.
+- A projection may carry the measure's `format` string (Desktop adds it); optional when authoring.
+- The role keys in `queryState` are the internal role names from §1 verbatim.
+
+### Layout variants (objects deltas from the canonical card)
+
+- **Trend line/bars:** `"cardStyle": [{ "properties": { "trendChartType": { "expr": { "Literal": { "Value": "'line'" } } } } }]` (or `'bars'`).
+- **Target progress:** `stylePreset` → `'goal'` (target measure bound; `goalTargetType` defaults to `progress`).
+- **Target fixed:** `stylePreset` → `'goal'`, `goalTargetType` → `'fixed'`.
+- **Headline:** `stylePreset` → `'headline'` (trend/target bindings unnecessary).
+- **Dark theme:** `"theme": { "expr": { "Literal": { "Value": "'dark'" } } }` — no font colors needed (auto-contrast).
+- **Custom surface:** `"surface": { "solid": { "color": { "expr": { "Literal": { "Value": "'#EAF6F8'" } } } } }`.
+
+### Conditional formatting example (trend-direction, lower-is-better metric)
+
+```json
+"conditionalFormatting": [{ "properties": {
+  "enable": { "expr": { "Literal": { "Value": "true" } } },
+  "config": { "expr": { "Literal": {
+    "Value": "'{\"basedOn\":\"trend\",\"rules\":{\"value\":[],\"pct\":[],\"change\":[]},\"trend\":{\"dir\":\"low\",\"good\":\"#0E9F6E\",\"neutral\":\"#E0A21E\",\"bad\":\"#E0484C\"},\"applyTrendLine\":true,\"applyTargetBar\":false}'"
+  } } }
+} }]
+```
 
 ---
 
