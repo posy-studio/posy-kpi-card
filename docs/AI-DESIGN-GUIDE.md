@@ -21,8 +21,8 @@ layouts the same height.**
 |---|---|---|---|---|
 | Trend | **408 × 315** | 360 × 280 | ~1.3:1 | The sparkline needs vertical room |
 | Target | **408 × 266** | 360 × 240 | ~1.5:1 | Bar + foot, no chart body |
-| Headline | **416 × 189** | 320 × 170 | ~2.2:1 | The number is the whole card |
-| Headline w/ comparison value modes | 360 × 212 | 320 × 190 | ~1.7:1 | Extra comparison row |
+| Headline, value only | **416 × 189** | 320 × 170 | ~2.2:1 | The number is the whole card |
+| Headline w/ ANY comparison row | **384 × 212** | 320 × 190 | ~1.8:1 | The 189 spec clips once a delta row renders — if a comparison is bound and showing, use 212. |
 
 Scaling: cards may scale ±15% from canonical while keeping aspect. Below minimum height, reduce
 `callout.fontSize` (height < 220 → 36–40) — the value never auto-shrinks.
@@ -77,13 +77,48 @@ the right way," `pct` basis for goal health. Colors stay the DS trio unless the 
 8. Respect per-layout property scope: no trend properties on Headline cards, no `goalTargetType`
    without a target.
 
-## 5. Design-QA gate (add to validation)
+## 5. Microcopy — humanize every label
+
+Auto-derived captions expose raw measure names ("vs Revenue PY") — machine talk, not Posy talk.
+Always set a humanized `comparisonLabel` (with its tracker pair per the authoring reference §4):
+
+| Measure-name pattern | Caption |
+|---|---|
+| `<X> PY`, `<X> Prior Year`, `<X> LY` | `vs prior year` |
+| `<X> Last Month`, `<X> LM`, `<X> MoM` | `vs last month` |
+| `<X> Last Week` / `Last Quarter` | `vs last week` / `vs last quarter` |
+| `<X> Budget` / `Plan` / `Forecast` | `vs budget` / `vs plan` / `vs forecast` |
+| Unrecognized | Ask the user; never ship the raw measure name |
+
+Lowercase after "vs", no trailing punctuation. The callout eyebrow label may stay auto (field names
+like "Revenue" read fine) — rename only when the field name is technical (`msr_rev_net` → `Net
+Revenue`).
+
+## 6. Number formatting — fix the model, not the card
+
+The card takes **currency/percent symbols from the measure's format string** (a deliberate design:
+one fix formats every visual in the report). During model reading, audit `formatString` in the TMDL:
+
+- Currency-semantic measures (revenue, sales, cost, price — and their PY/target/plan siblings) with
+  a bare-number or missing `formatString` → set one in the TMDL: `\$#,0;(\$#,0);\$#,0`.
+  **The whole family must match** — a `$8.26M` value next to an unformatted `8.36M` target on the
+  same card is a design failure.
+- Percent measures → `0.00%;-0.00%;0.00%`. Counts → plain `0`.
+- If the model can't be edited (byConnection / user declines), fall back to a per-visual projection
+  `format` override in `visual.json` — and note the inconsistency risk to the user.
+- Display units remain the card's job (§4.7): magnitude-matched, decimals 0 for counts, 2 default.
+
+## 7. Design-QA gate (add to validation)
 
 After the report opens in Desktop, review a screenshot against:
 
-- [ ] Heights differ by layout per §1 (a Headline card is never Trend-height)
+- [ ] Heights differ by layout per §1 (a Headline card is never Trend-height; +23px when a
+      comparison row shows) and **no card's content is clipped**
 - [ ] Rows aligned, gutters even, margins ≥ 40
 - [ ] No value reads awkwardly ("0.01M", "10162" for money, clipped digits)
+- [ ] Currency/percent symbols present where semantic (model formatStrings audited per §6), and
+      consistent across each card's value/target/comparison family
+- [ ] No raw measure names in captions ("vs Revenue PY" → "vs prior year", §5)
 - [ ] Value/target and value/comparison pairs are the same measure family and magnitude
 - [ ] At most one accent decision visible per card; palette from §3 only
 - [ ] Dark cards contain zero manual color overrides

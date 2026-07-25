@@ -32,7 +32,9 @@ required reading before generating anything:
 
 ### 1. Read the semantic model
 Parse `*.SemanticModel\definition\` (TMDL text): collect tables, **measures** (with `formatString` —
-this drives the card's currency/percent rendering), and date tables/columns. Identify:
+this drives the card's currency/percent rendering), and date tables/columns. **Audit format strings**
+per design guide §6: currency-semantic measures with bare/missing `formatString` get a model-level
+fix (whole family — value + PY + target — consistently). Identify:
 - KPI candidates: measures the user names, or headline-worthy measures (revenue, users, rates).
 - The **trend axis**: a month/date column from the date dimension (e.g. `Dim_Date.MonthYear`). Check
   for a sort-by column; the visual plots values in the sorted order.
@@ -54,7 +56,10 @@ template in AI-AUTHORING.md §7:
 - `name`/folder: a fresh 20-char lowercase hex id (must be unique in the report).
 - Bind roles per §1 of the reference; sort by the trend column ascending (`isDefaultSort: true`).
 - **Size per layout** from the design guide §1 — Trend 408×315, Target 408×266, Headline 416×189
-  (never the same height across layouts) — and lay out with the §2 grid math.
+  value-only / **384×212 with a comparison row** (never the same height across layouts) — and lay
+  out with the §2 grid math.
+- **Humanize comparison captions** per design guide §5 ("vs prior year", "vs last month" — never
+  raw measure names), always writing the label + tracker trio.
 - **Style from a curated look** (design guide §3): Posy Light / Posy Dark / Brand accent / Status.
   Free-form property mixing only on an explicit user request, within the §4 restraint rules.
 - Only set properties that differ from defaults. **Never** set the reserved properties (§4 of the
