@@ -108,6 +108,18 @@ one fix formats every visual in the report). During model reading, audit `format
   `format` override in `visual.json` — and note the inconsistency risk to the user.
 - Display units remain the card's job (§4.7): magnitude-matched, decimals 0 for counts, 2 default.
 
+**The exception protocol — same measure, different formatting per visual.** The model carries
+*semantic* truth (money = currency format); a visual that wants different presentation (e.g. a dense
+table dropping `$` for cleaner columns) gets a **per-visual override** — the projection `format` in
+its `visual.json` (the same mechanism as Power BI's General → Data format card). Rules:
+
+1. Never flip the model's format to satisfy one visual — that silently changes every other surface.
+2. Never duplicate measures for formatting (`Revenue` vs `Revenue ($)`).
+3. Choose the model default that minimizes overrides; if most visuals end up overriding, the model
+   default is wrong — flip it once instead.
+4. Within one KPI card, the value/target/comparison family always agrees (all currency or none) —
+   whichever layer it takes to get there.
+
 ## 7. Design-QA gate (add to validation)
 
 After the report opens in Desktop, review a screenshot against:
