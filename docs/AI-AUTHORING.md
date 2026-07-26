@@ -253,8 +253,8 @@ pattern below is Desktop's own serialization of this visual.
 > Desktop's re-serialization changed **no encodings** — the only diffs were the visual persisting
 > auto-derived label + tracker pairs where they'd been omitted (the §6 self-derive behavior). Expect
 > those additions on re-save; they're harmless. Custom labels written with their trackers were
-> preserved untouched. Test harness: `AppSource Submission/encoding-test/generate-torture-page.py`
-> (+ `baseline-generated/` for diffing).
+> preserved untouched. Test harness: `ai-authoring/encoding-test/generate-torture-page.py`
+> (+ `baseline-generated/` for diffing), kept alongside the PBIR ground-truth corpus.
 
 ### Literal encoding rules
 
