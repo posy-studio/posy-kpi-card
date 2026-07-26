@@ -20,7 +20,7 @@ layouts the same height.**
 | Layout | Canonical W×H | Minimum | Aspect | Why |
 |---|---|---|---|---|
 | Trend | **408 × 315** | 360 × 280 | ~1.3:1 | The sparkline needs vertical room |
-| Target | **408 × 266** | 360 × 240 | ~1.5:1 | Bar + foot, no chart body |
+| Target | **408 × 266** | 360 × 260 | ~1.5:1 | Bar + foot, no chart body. Below ~260 the content clips — never go under (an early build silently *hid* the bar below this height; fixed, but the minimum stands) |
 | Headline, value only | **416 × 189** | 320 × 170 | ~2.2:1 | The number is the whole card |
 | Headline w/ ANY comparison row | **384 × 212** | 320 × 190 | ~1.8:1 | The 189 spec clips once a delta row renders — if a comparison is bound and showing, use 212. |
 

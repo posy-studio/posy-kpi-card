@@ -177,14 +177,17 @@
 .kpi-card.goal .kpi-value { margin-top: 14px; }
 .kpi-card.goal .kpi-compare-row { margin-bottom: 20px; }
 .kpi-goal-sub { margin-top: 8px; font-size: 14px; color: var(--muted); font-weight: 500; }
-.kpi-bar { height: 7px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+/* flex: none — the bars are fixed-height flex items in the card's column; without it, an
+   over-constrained tile silently compresses them to 0 height (the bar "vanishes" while the
+   text around it survives via min-content). Found by an end-user sizing a goal card to 250px. */
+.kpi-bar { height: 7px; border-radius: 999px; background: var(--bg); overflow: hidden; flex: none; }
 .kpi-card.goal .kpi-bar.goal-bar { height: 10px; margin-top: 22px; }
 .kpi-bar-fill { height: 100%; border-radius: 999px; transition: width .9s cubic-bezier(.4,0,.2,1); }
-.kpi-card.goal .kpi-bullet-wrap { margin-top: 9px; }
+.kpi-card.goal .kpi-bullet-wrap { margin-top: 9px; flex: none; }
 .kpi-bullet { position: relative; height: 8px; border-radius: 999px; background: var(--bg); }
 .kpi-bullet-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; transition: width .9s cubic-bezier(.4,0,.2,1); }
 .kpi-bullet-mark { position: absolute; top: -3px; bottom: -3px; width: 2.5px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); }
-.kpi-goal-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.kpi-goal-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); flex: none; }
 .kpi-goal-foot span:first-child { font-weight: 500; color: var(--ink-2); }
 .tgt-status { font-family: var(--num); font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .tgt-status.pos { color: var(--pos-text); }
