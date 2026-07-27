@@ -18,7 +18,7 @@
     "@types/d3": "7.4.3",
     "@typescript-eslint/eslint-plugin": "^8.8.0",
     "d3": "7.9.0",
-    "eslint": "^9.11.1",
+    "eslint": "^10.8.0",
     "eslint-plugin-powerbi-visuals": "^1.0.0",
     "jszip": "^3.10.1",
     "powerbi-visuals-api": "5.11.0",
