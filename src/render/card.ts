@@ -266,7 +266,7 @@ function buildGoalBlock(vm: KpiViewModel, props: CardProps, lineColor: string): 
     const pct = target > 0 ? Math.round(value / target * 100) : 0; // progress needs a positive goal; non-positive target → 0%
     out.push(el("div", { class: "kpi-goal-sub" }, `of ${fmtVal(target, vm, props)} target`));
     out.push(buildProgressBar(pct, lineColor));
-    out.push(el("div", { class: "kpi-goal-foot" }, el("span", {}, `${pct}% to goal`)));
+    out.push(el("div", { class: "kpi-goal-foot" }, el("span", { class: "tgt-status" }, `${pct}% to goal`)));
   }
   return out;
 }
