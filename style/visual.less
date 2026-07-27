@@ -188,10 +188,15 @@
 .kpi-bullet-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; transition: width .9s cubic-bezier(.4,0,.2,1); }
 .kpi-bullet-mark { position: absolute; top: -3px; bottom: -3px; width: 2.5px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); }
 .kpi-goal-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); flex: none; }
-.kpi-goal-foot span:first-child { font-weight: 500; color: var(--ink-2); }
+.kpi-goal-foot span:first-child { font-family: var(--num); font-weight: 500; color: var(--ink-2); }
 .tgt-status { font-family: var(--num); font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; }
-.tgt-status.pos { color: var(--pos-text); }
-.tgt-status.neg { color: var(--neg-text); }
+/* the fixed foot's status span must outrank the neutral first-child rule above:
+   same specificity + later source order restores weight 600; the extra-class
+   selectors outrank it for the sentiment colors (design: over/under IS colored,
+   while the progress foot stays neutral). */
+.kpi-goal-foot span.tgt-status { font-weight: 600; }
+.tgt-status.pos, .kpi-goal-foot .tgt-status.pos { color: var(--pos-text); }
+.tgt-status.neg, .kpi-goal-foot .tgt-status.neg { color: var(--neg-text); }
 
 /* ---------- responsive reflow (container queries on the card's own width) ----------
    As the tile narrows, shed in order: the comparison phrase → then the chart.
