@@ -186,7 +186,7 @@ class CalloutCard extends CompositeCard {
     description: "Summarizes the headline value, the comparison delta and % of target over the trend (not the trend line itself). Total uses each measure's own DAX aggregate — correct for any measure, including ratios/%; Last/First/Average/Minimum/Maximum roll up the per-period points."
   });
   displayUnits = new formattingSettings.ItemDropdown({
-    name: "displayUnits", displayName: "Display units", items: UNITS_OPTS, value: UNITS_OPTS[3] // Millions
+    name: "displayUnits", displayName: "Display units", items: UNITS_OPTS, value: UNITS_OPTS[0] // Auto (magnitude-scaled; flipped from Millions 2026-07-29 — counts rendered "0.01M")
   });
   decimalPlaces = new formattingSettings.NumUpDown({
     name: "decimalPlaces", displayName: "Decimal places", value: 2,
@@ -302,7 +302,7 @@ class DeltaCard extends CompositeCard {
   cmpItalic = new formattingSettings.ToggleSwitch({ name: "cmpItalic", displayName: "Italic", value: false });
   cmpUnderline = new formattingSettings.ToggleSwitch({ name: "cmpUnderline", displayName: "Underline", value: false });
   cmpFontColor = new formattingSettings.ColorPicker({ name: "cmpFontColor", displayName: "Font color", value: { value: "" } });
-  cmpDisplayUnits = new formattingSettings.ItemDropdown({ name: "cmpDisplayUnits", displayName: "Display units", items: UNITS_OPTS, value: UNITS_OPTS[3] });
+  cmpDisplayUnits = new formattingSettings.ItemDropdown({ name: "cmpDisplayUnits", displayName: "Display units", items: UNITS_OPTS, value: UNITS_OPTS[0] }); // Auto, matching the callout default
   cmpDecimals = new formattingSettings.NumUpDown({ name: "cmpDecimals", displayName: "Decimal places", value: 2, options: { minValue: { type: ValidatorType.Min, value: 0 }, maxValue: { type: ValidatorType.Max, value: 4 } } });
   cmpShowBlankAs = new formattingSettings.ItemDropdown({ name: "cmpShowBlankAs", displayName: "Show blank as", items: BLANK_OPTS, value: BLANK_OPTS[0] });
   cmpBlankText = new formattingSettings.TextInput({ name: "cmpBlankText", displayName: "Custom blank text", value: "", placeholder: "" });
