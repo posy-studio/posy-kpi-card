@@ -355,6 +355,8 @@ export class Visual implements IVisual {
           trend: vm.trendValues || [],
           hasComparison: vm.hasComparison,
           deltaFraction: vm.deltaFraction,
+          valueIsPercent: vm.valueIsPercent,
+          deltaPoints: vm.deltaPoints,
           deltaLabel: props.comparisonLabel || (vm.comparisonName ? "vs " + vm.comparisonName : ""),
           showChange: props.showChange,
           showComparisonValue: props.showComparisonValue,

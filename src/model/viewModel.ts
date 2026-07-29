@@ -34,6 +34,10 @@ export interface KpiViewModel {
   comparisonName: string; // the comparison field's display name (for the default "vs …" label)
   comparisonFormat: string; // the comparison measure's format string (for the Comparison Value display)
   deltaFraction: number; // (value − comparison) / comparison
+  /** The VALUE measure is percent-typed (its format string contains "%") → the delta renders as
+   *  percentage POINTS (deltaPoints) instead of relative % change. */
+  valueIsPercent: boolean;
+  deltaPoints: number; // (value − comparison) × 100 — movement in percentage points
 
   /** Target (goal / benchmark). */
   hasTarget: boolean;
@@ -95,7 +99,7 @@ export function parseDataView(dataView: DataView | undefined, aggMode: string = 
     hasValue: false, label: "", valueRaw: 0, valueFormatString: "", valueIsBlank: false,
     trendValues: [], trendLabels: [], trendValueName: "", trendValueFormat: "", hasTrend: false,
     tooltipColumns: [],
-    hasComparison: false, comparisonBound: false, comparisonIsBlank: false, comparisonRaw: 0, comparisonName: "", comparisonFormat: "", deltaFraction: 0,
+    hasComparison: false, comparisonBound: false, comparisonIsBlank: false, comparisonRaw: 0, comparisonName: "", comparisonFormat: "", deltaFraction: 0, valueIsPercent: false, deltaPoints: 0,
     hasTarget: false, targetRaw: 0, trendNodes: [],
   };
 
@@ -210,9 +214,12 @@ export function parseDataView(dataView: DataView | undefined, aggMode: string = 
   const comparisonRaw = comparisonAgg ?? 0;
   const comparisonName = idx.comparison !== undefined ? ((sources[idx.comparison].displayName as string) || "") : "";
   const comparisonFormat = idx.comparison !== undefined ? ((sources[idx.comparison].format as string) || "") : "";
-  // A delta is computable only when both sides are present and the base is non-zero.
-  const hasComparison = !valueIsBlank && comparisonAgg !== undefined && comparisonAgg !== 0;
-  const deltaFraction = hasComparison ? (valueRaw - comparisonRaw) / comparisonRaw : 0;
+  const valueIsPercent = valueFormatString.indexOf("%") >= 0;
+  // A delta is computable when both sides are present; the relative-% form additionally needs a
+  // non-zero base, while the percentage-POINT form (percent-typed value) is defined even at a 0% base.
+  const hasComparison = !valueIsBlank && comparisonAgg !== undefined && (valueIsPercent || comparisonAgg !== 0);
+  const deltaFraction = hasComparison && comparisonRaw !== 0 ? (valueRaw - comparisonRaw) / comparisonRaw : 0;
+  const deltaPoints = (valueRaw - comparisonRaw) * 100;
 
   const targetAgg = aggregate(idx.target);
   const hasTarget = targetAgg !== undefined;
@@ -242,6 +249,8 @@ export function parseDataView(dataView: DataView | undefined, aggMode: string = 
     comparisonName,
     comparisonFormat,
     deltaFraction,
+    valueIsPercent,
+    deltaPoints,
     hasTarget,
     targetRaw,
     trendNodes: trendLeaves,

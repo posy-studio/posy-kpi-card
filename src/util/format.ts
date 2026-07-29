@@ -67,3 +67,13 @@ export function formatDeltaPercent(fraction: number): string {
   if (!isFinite(fraction)) return "—";
   return (Math.abs(fraction) * 100).toFixed(1) + "%";
 }
+
+/** Delta in percentage points — used when the VALUE measure is itself a percent (its format string
+ *  contains "%"): a relative % change of a % reads wrong, so the delta shows the absolute movement
+ *  in points instead (e.g. 3.84% vs 3.42% → "0.42 pt"). Up to 2 decimals, trailing zeros trimmed;
+ *  the ▲/▼ glyph carries the sign, matching formatDeltaPercent. */
+export function formatDeltaPoints(points: number): string {
+  if (!isFinite(points)) return "—";
+  const s = Math.abs(points).toFixed(2).replace(/\.?0+$/, "") || "0";
+  return s + " pt";
+}

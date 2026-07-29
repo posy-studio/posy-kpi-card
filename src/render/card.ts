@@ -11,7 +11,7 @@ import { buildProgressBar, buildBulletBar } from "./targetBar";
 import { buildDelta } from "./delta";
 import { buildMenu } from "./menu";
 import { renderIconMark } from "./icon";
-import { formatCallout, formatDeltaPercent, resolveBlank } from "../util/format";
+import { formatCallout, formatDeltaPercent, formatDeltaPoints, resolveBlank } from "../util/format";
 
 export type Preset = "trend" | "goal" | "headline";
 
@@ -236,8 +236,8 @@ function srSummary(vm: KpiViewModel, props: CardProps, valueFormatted: string, c
     }
   }
   if (props.showComparison && vm.hasComparison) {
-    const up = vm.deltaFraction >= 0;
-    s += ` ${up ? "Up" : "Down"} ${formatDeltaPercent(vm.deltaFraction)} ${props.comparisonLabel}.`;
+    const up = deltaIsUp(vm);
+    s += ` ${up ? "Up" : "Down"} ${deltaText(vm)} ${props.comparisonLabel}.`;
   }
   if (cfMatched) s += ` Conditional formatting applied.`;
   return s;
@@ -287,6 +287,15 @@ function buildHead(vm: KpiViewModel, props: CardProps, iconColor: string): HTMLE
 // When the value shows, lead with the capitalized "Period:" label + value and let the change trail as the
 // only colored element: both → "Last month: $4.29M ▲ 12.4%"; value-only → "Last month: $4.29M".
 // change-only (the default) is unchanged → "▲ 12.4% vs last month". neither → hidden.
+/** Delta display — percentage POINTS for percent-typed value measures ("0.42 pt"),
+ *  relative % change for everything else ("12.4%"). The glyph carries the sign. */
+function deltaText(vm: KpiViewModel): string {
+  return vm.valueIsPercent ? formatDeltaPoints(vm.deltaPoints) : formatDeltaPercent(vm.deltaFraction);
+}
+function deltaIsUp(vm: KpiViewModel): boolean {
+  return vm.valueIsPercent ? vm.deltaPoints >= 0 : vm.deltaFraction >= 0;
+}
+
 function buildCompareRow(vm: KpiViewModel, props: CardProps): HTMLElement | null {
   if (!props.showComparison || !vm.comparisonBound) return null;
   const showDelta = props.showChange, showValue = props.showComparisonValue;
@@ -296,10 +305,10 @@ function buildCompareRow(vm: KpiViewModel, props: CardProps): HTMLElement | null
   let deltaEl: HTMLElement | null = null;
   if (showDelta) {
     if (vm.hasComparison) {
-      const actualUp = vm.deltaFraction >= 0;
+      const actualUp = deltaIsUp(vm);
       const good = props.lowerIsBetter ? !actualUp : actualUp;
       deltaEl = buildDelta({
-        text: formatDeltaPercent(vm.deltaFraction),
+        text: deltaText(vm),
         positive: good, directionUp: actualUp, background: props.varianceBackground,
         fontFamily: props.deltaValueFont, fontSize: props.deltaValueSize,
         color: props.deltaValueColor, wrap: props.deltaValueWrap,
