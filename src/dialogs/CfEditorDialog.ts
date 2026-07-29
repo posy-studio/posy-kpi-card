@@ -15,6 +15,7 @@ interface PvData {
   hasTrend: boolean; trend: number[];
   hasComparison: boolean; deltaFraction: number; deltaLabel: string;
   valueIsPercent: boolean; deltaPoints: number; // percent-typed value → delta shows points ("0.42 pt")
+  deltaDecimals: number | null; // Change → Decimal places (null = Auto), mirrors the card
   showChange: boolean; showComparisonValue: boolean; comparisonValueFormatted: string;
   hasTarget: boolean; targetRaw: number; goalPct: number | null;
   valueFormatString: string; displayUnits: string; decimals: number; locale: string; isReal: boolean;
@@ -29,7 +30,7 @@ const SAMPLE_PVDATA: PvData = {
   label: "NET REVENUE", valueFormatted: "$4.82M", valueRaw: 4820000, valueIsBlank: false,
   hasTrend: true, trend: [3.1, 3.0, 3.4, 3.3, 3.8, 3.6, 4.0, 4.1, 3.9, 4.4, 4.6, 4.82],
   hasComparison: true, deltaFraction: 0.124, deltaLabel: "vs last month",
-  valueIsPercent: false, deltaPoints: 0,
+  valueIsPercent: false, deltaPoints: 0, deltaDecimals: null,
   showChange: true, showComparisonValue: false, comparisonValueFormatted: "$4.29M",
   hasTarget: true, targetRaw: 6000000, goalPct: 80,
   valueFormatString: "", displayUnits: "millions", decimals: 2, locale: "", isReal: false,
@@ -483,7 +484,9 @@ export class CfEditorDialog {
           const deltaUp = trendMode ? move !== "down"
             : (pvData.valueIsPercent ? pvData.deltaPoints >= 0 : pvData.deltaFraction >= 0);
           const deltaTxt = trendMode ? (move === "flat" ? "0.4%" : "12.4%")
-            : (pvData.valueIsPercent ? formatDeltaPoints(pvData.deltaPoints) : formatDeltaPercent(pvData.deltaFraction));
+            : (pvData.valueIsPercent
+              ? formatDeltaPoints(pvData.deltaPoints, pvData.deltaDecimals)
+              : formatDeltaPercent(pvData.deltaFraction, pvData.deltaDecimals));
           const label = pvData.deltaLabel || "vs last period";
           const deltaSpan = hasDelta ? el("span", { class: `cfd-pvc-d ${deltaUp ? "up" : "down"}` }, deltaUp ? "▲" : "▼", " " + deltaTxt) : null;
           const cap = el("span", { class: "cfd-pvc-vs" });

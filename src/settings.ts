@@ -261,6 +261,17 @@ class DeltaCard extends CompositeCard {
   varianceBackground = new formattingSettings.ToggleSwitch({
     name: "varianceBackground", displayName: "Background", value: false
   });
+  // Decimal places for the change readout. Auto = 1 decimal for relative % ("12.4%"); for
+  // percentage-point deltas, up to 2 trimmed — extending rather than collapsing tiny movements.
+  valueDecimals = new formattingSettings.ItemDropdown({
+    name: "valueDecimals", displayName: "Decimal places",
+    items: [
+      { value: "auto", displayName: "Auto" }, { value: "0", displayName: "0" },
+      { value: "1", displayName: "1" }, { value: "2", displayName: "2" },
+      { value: "3", displayName: "3" }, { value: "4", displayName: "4" },
+    ],
+    value: { value: "auto", displayName: "Auto" },
+  });
   valueFontFamily = new formattingSettings.ItemDropdown({
     name: "valueFontFamily", displayName: "Font", items: FONT_OPTS, value: FONT_OPTS[0] // Space Grotesk
   });
@@ -336,7 +347,7 @@ class DeltaCard extends CompositeCard {
   valueGroup = new Group({
     name: "deltaValueGroup", displayName: "Change", collapsible: true,
     slices: [ this.valueFontFamily, this.valueFontSize, this.valueBold, this.valueItalic, this.valueUnderline,
-              this.valueFontColor, this.valueShowBlankAs,
+              this.valueFontColor, this.valueDecimals, this.valueShowBlankAs,
               this.valueBlankText, this.valueTextWrap, this.varianceBackground, this.lowerIsBetter ]
   });
   comparisonValueGroup = new Group({

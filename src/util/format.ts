@@ -62,18 +62,24 @@ export function resolveBlank(option: string, customText: string): string {
   }
 }
 
-/** Delta percentage — a computed variance, shown as a bare 1-decimal percent (e.g. "12.4%"). */
-export function formatDeltaPercent(fraction: number): string {
+/** Delta percentage — a computed variance shown as a bare percent (e.g. "12.4%").
+ *  decimals: explicit 0–4 from the Change → Decimal places control; null/undefined = Auto (1). */
+export function formatDeltaPercent(fraction: number, decimals?: number | null): string {
   if (!isFinite(fraction)) return "—";
-  return (Math.abs(fraction) * 100).toFixed(1) + "%";
+  const d = decimals == null ? 1 : decimals;
+  return (Math.abs(fraction) * 100).toFixed(d) + "%";
 }
 
 /** Delta in percentage points — used when the VALUE measure is itself a percent (its format string
  *  contains "%"): a relative % change of a % reads wrong, so the delta shows the absolute movement
- *  in points instead (e.g. 3.84% vs 3.42% → "0.42 pt"). Up to 2 decimals, trailing zeros trimmed;
- *  the ▲/▼ glyph carries the sign, matching formatDeltaPercent. */
-export function formatDeltaPoints(points: number): string {
+ *  in points instead (e.g. 3.84% vs 3.42% → "0.42 pt"). The ▲/▼ glyph carries the sign.
+ *  decimals: explicit 0–4 from the control; null/undefined = Auto — up to 2 decimals with trailing
+ *  zeros trimmed, extending to 4 rather than collapsing a real movement to "0 pt". */
+export function formatDeltaPoints(points: number, decimals?: number | null): string {
   if (!isFinite(points)) return "—";
-  const s = Math.abs(points).toFixed(2).replace(/\.?0+$/, "") || "0";
-  return s + " pt";
+  const abs = Math.abs(points);
+  if (decimals != null) return abs.toFixed(decimals) + " pt";
+  let s = abs.toFixed(2).replace(/\.?0+$/, "");
+  if ((s === "" || s === "0") && abs > 0) s = abs.toFixed(4).replace(/\.?0+$/, "");
+  return (s || "0") + " pt";
 }

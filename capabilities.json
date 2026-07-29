@@ -839,6 +839,19 @@
             "bool": true
           }
         },
+        "valueDecimals": {
+          "displayName": "Decimal places",
+          "type": {
+            "enumeration": [
+              { "value": "auto", "displayName": "Auto" },
+              { "value": "0", "displayName": "0" },
+              { "value": "1", "displayName": "1" },
+              { "value": "2", "displayName": "2" },
+              { "value": "3", "displayName": "3" },
+              { "value": "4", "displayName": "4" }
+            ]
+          }
+        },
         "valueFontFamily": {
           "displayName": "Font",
           "type": {

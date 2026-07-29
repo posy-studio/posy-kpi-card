@@ -63,6 +63,7 @@ export interface CardProps {
   comparisonLabel: string;
   lowerIsBetter: boolean;
   varianceBackground: boolean;
+  deltaValueDecimals: number | null; // Change → Decimal places (null = Auto)
   // Comparison value (delta)
   deltaValueFont: string;
   deltaValueSize: number;
@@ -237,7 +238,7 @@ function srSummary(vm: KpiViewModel, props: CardProps, valueFormatted: string, c
   }
   if (props.showComparison && vm.hasComparison) {
     const up = deltaIsUp(vm);
-    s += ` ${up ? "Up" : "Down"} ${deltaText(vm)} ${props.comparisonLabel}.`;
+    s += ` ${up ? "Up" : "Down"} ${deltaText(vm, props)} ${props.comparisonLabel}.`;
   }
   if (cfMatched) s += ` Conditional formatting applied.`;
   return s;
@@ -289,8 +290,10 @@ function buildHead(vm: KpiViewModel, props: CardProps, iconColor: string): HTMLE
 // change-only (the default) is unchanged → "▲ 12.4% vs last month". neither → hidden.
 /** Delta display — percentage POINTS for percent-typed value measures ("0.42 pt"),
  *  relative % change for everything else ("12.4%"). The glyph carries the sign. */
-function deltaText(vm: KpiViewModel): string {
-  return vm.valueIsPercent ? formatDeltaPoints(vm.deltaPoints) : formatDeltaPercent(vm.deltaFraction);
+function deltaText(vm: KpiViewModel, props: CardProps): string {
+  return vm.valueIsPercent
+    ? formatDeltaPoints(vm.deltaPoints, props.deltaValueDecimals)
+    : formatDeltaPercent(vm.deltaFraction, props.deltaValueDecimals);
 }
 function deltaIsUp(vm: KpiViewModel): boolean {
   return vm.valueIsPercent ? vm.deltaPoints >= 0 : vm.deltaFraction >= 0;
@@ -308,7 +311,7 @@ function buildCompareRow(vm: KpiViewModel, props: CardProps): HTMLElement | null
       const actualUp = deltaIsUp(vm);
       const good = props.lowerIsBetter ? !actualUp : actualUp;
       deltaEl = buildDelta({
-        text: deltaText(vm),
+        text: deltaText(vm, props),
         positive: good, directionUp: actualUp, background: props.varianceBackground,
         fontFamily: props.deltaValueFont, fontSize: props.deltaValueSize,
         color: props.deltaValueColor, wrap: props.deltaValueWrap,
